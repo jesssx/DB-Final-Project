@@ -5,9 +5,14 @@ import os
 import pandas as pd
 import requests
 import sys
-from Column import Column
+
+from column import Column, Compression
 
 MAX_SIZE = 10**10  # bytes = 100 GB
+
+
+def _read_csv(file_path):
+    return ColumnStoreTable(file_path)
 
 
 class ColumnStoreTable:
@@ -54,6 +59,12 @@ class ColumnStoreTable:
         print(columns["NAME"].get_values)
         self.columns = columns
 
+    def print_column_stats(self):
+        print("++++++++++++++++\n+ Column Stats +\n++++++++++++++++")
+        for col in self.columns.values():
+            col.print_col_stats()
+        print()
+
     def get_table_stats(self):
         """
         Returns dictionary of memory benchmarking statistics.
@@ -93,7 +104,7 @@ class ColumnStoreTable:
         """
         Decompresses all columns.
         """
-        for col_name, col in self.columns:
+        for _, col in self.columns:
             col.decompress()
         return self
 

@@ -104,13 +104,13 @@ def main():
     # print(column_store_table.to_row_format())
     # column_store_table.to_csv("out.csv")
 
-    # filt = lambda x: x == "USW00094728"
-    # column_store_table.filter("STATION", filt)
-    # column_store_table.to_csv("out2.csv")
+    filt = lambda x: x == "USW00094728"
+    column_store_table.filter("STATION", filt)
+    column_store_table.to_csv("out2.csv")
 
-    # filter_exp = lambda x: x == "2009-01-01"
-    # column_store_table.filter("DATE", filter_exp)
-    # column_store_table.to_csv("out3.csv")
+    filter_exp = lambda x: x == "2009-01-01"
+    column_store_table.filter("DATE", filter_exp)
+    column_store_table.to_csv("out3.csv")
 
 
 

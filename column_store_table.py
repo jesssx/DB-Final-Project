@@ -144,6 +144,42 @@ class ColumnStoreTable:
     def filter(self, column_name, condition):
         # condition is probably a lambda function
         # filter column_name based on condition
+      # condition is probably a lambda function
+      # filter column_name based on condition
+        filtered_columns = {}
+        num_series = 0
+        for col_name in self.columns:
+            num_series = len(self.columns[col_name].get_values())
+            filtered_columns[col_name] = Column(col_name, [None] * num_series)
+        col_series = self.columns[column_name].get_values()
+        # print(col_series, len(col_series))
+
+        filtered_indices = []
+        # loop through all the series for column names
+        for i in range(len(col_series)):
+            # loop through all the values in each series
+            for j, value in col_series[i].items():
+            # if the value fulfills condition
+            # print(j, value)
+                if condition(value):
+                    # print("true")
+                    # add this value to filtered_columns
+                    # along with its corresponding values in every other column
+                    filtered_indices.append((i, j))
+
+        for col_name in self.columns:
+            new_col = [[] * num_series]
+            for i, j in filtered_indices:
+                filtered_value = self.columns[col_name].get_values()[i][j]
+                new_col[i].append(filtered_value)
+            
+            for k in range(len(new_col)):
+                if k == 0:
+                    filtered_columns[col_name] = Column(col_name, [pd.Series(new_col[k])])
+                else:
+                    filtered_columns[col_name].add_values(pd.Series(new_col[k]))
+
+        self.columns = filtered_columns
         return self
 
     def merge(self, other, on_column_name):

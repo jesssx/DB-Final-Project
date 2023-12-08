@@ -118,3 +118,12 @@ class Column:
 
     def add_values(self, new_val):
         self.values.append(new_val)
+
+    def sort_column(self, indices):
+        compression = self.compression
+        self.decompress()
+        new_vals = []
+        for i in indices:
+            new_vals.append(self.values[i])
+        self.values = pd.Series(new_vals)
+        self.compress(compression)

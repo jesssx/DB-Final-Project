@@ -53,9 +53,31 @@ def test_merge():
     merged_table = id_table.merge(hobby_table, "names")
 
 
+def test_sort():
+    ids = [3, 2, 1, 4, 5]
+    names = ["C", "B", "A", "D", "E"]
+
+    col1 = Column("ids", pd.Series(ids))
+    col2 = Column("names", pd.Series(names))
+
+    id_table = ColumnStoreTable(None)
+    id_table.add_column(col1.name, col1)
+    id_table.add_column(col2.name, col2)
+
+    columns = id_table.get_columns()
+    for _, col in columns.items():
+        print(col.get_values())
+
+    id_table.sort("ids")
+    columns = id_table.get_columns()
+    for _, col in columns.items():
+        print(col.get_values())
+
+
 def main():
     test_RLE_single_column()
     test_merge()
+    test_sort()
 
 
 if __name__ == "__main__":

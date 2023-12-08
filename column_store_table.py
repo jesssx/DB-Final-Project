@@ -59,6 +59,9 @@ class ColumnStoreTable:
         print(columns["NAME"].get_values)
         self.columns = columns
 
+    def get_columns(self):
+        return self.columns
+
     def print_column_stats(self):
         print("++++++++++++++++\n+ Column Stats +\n++++++++++++++++")
         for col in self.columns.values():
@@ -152,8 +155,8 @@ class ColumnStoreTable:
                 other_dict[val] = []
             other_dict[val].append(i)
 
-        print(self_dict)
-        print(other_dict)
+        # print(self_dict)
+        # print(other_dict)
 
         # figure out which rows to keep for each table (equalities)
         join_rows = []
@@ -163,7 +166,7 @@ class ColumnStoreTable:
                     for j in other_dict[key]:
                         join_rows.append((i, j))
 
-        print(join_rows)
+        # print(join_rows)
 
         new_columns = {}
 
@@ -184,13 +187,22 @@ class ColumnStoreTable:
             new_col = Column(col_name, new_values)
             new_columns[col_name] = new_col
 
-        print([new_columns[col].values for col in new_columns])
+        # print([new_columns[col].values for col in new_columns])
 
         # create a new ColumnStoreTable with the new columns
         return ColumnStoreTable(None, new_columns)
 
     def sort(self, column_name, ascending=True):
         # sort column [stretch]
+        col = self.columns[column_name]
+        compression = col.get_compression()
+        col.decompress()
+        vals = list(col.get_values())
+        col.compress(compression)
+        indices = sorted(range(len(vals)), key=lambda k: vals[k])
+
+        for _, col in self.columns.items():
+            col.sort_column(indices)
         return self
 
     def add_column(self, column_name, column):

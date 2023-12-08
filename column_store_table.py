@@ -45,6 +45,9 @@ class ColumnStoreTable:
           columns[col].add_values(pd.Series([chunk.loc[:, col]]))
     print(columns['NAME'].get_values)
     self.columns = columns
+  
+  def get_column_names(self):
+    return self.columns.keys()
 
   def get_table_stats(self):
     """
@@ -85,7 +88,7 @@ class ColumnStoreTable:
     """
     Decompresses all columns.
     """
-    for col_name, col in self.columns:
+    for _, col in self.columns:
       col.decompress()
     return self
 

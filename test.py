@@ -1,7 +1,6 @@
 import pandas as pd
-
-from column import Column
-from column_store_table import ColumnStoreTable
+from Column import Column
+from column_store_table import ColumnStoreTable, _read_csv
 
 
 def test_RLE_single_column():
@@ -97,9 +96,22 @@ def test_sort():
 
 
 def main():
-    test_RLE_single_column()
-    test_merge()
-    test_sort()
+    # test_RLE_single_column()
+    # test_merge()
+    # test_sort()
+    print("***********")
+    column_store_table = _read_csv('https://raw.githubusercontent.com/toddwschneider/nyc-taxi-data/master/data/central_park_weather.csv')
+    # print(column_store_table.to_row_format())
+    # column_store_table.to_csv("out.csv")
+
+    # filt = lambda x: x == "USW00094728"
+    # column_store_table.filter("STATION", filt)
+    # column_store_table.to_csv("out2.csv")
+
+    # filter_exp = lambda x: x == "2009-01-01"
+    # column_store_table.filter("DATE", filter_exp)
+    # column_store_table.to_csv("out3.csv")
+
 
 
 if __name__ == "__main__":

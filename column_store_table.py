@@ -4,9 +4,13 @@ import os
 import pandas as pd
 import requests
 import sys
-from Column import Column
+
+from column import Column, Compression
 
 MAX_SIZE = 10**10 # bytes = 100 GB
+
+def _read_csv(file_path):
+  return ColumnStoreTable(file_path)
 
 class ColumnStoreTable:
   def __init__(self, file_path):
@@ -63,7 +67,7 @@ class ColumnStoreTable:
     Required:
       Columns specified in desired_compressions must already be decompressed.
     Args:
-      desired_compressions: dict of col_name to Compression enum, e.g. {"A": Compression.RLE, "B": Compression.DELTA}
+      desired_compressions: dict of col_name to Compression enum, e.g. {"A": Compression.RLE, "B": Compression.BITMAP}
     Returns:
       self
     """

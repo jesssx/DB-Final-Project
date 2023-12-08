@@ -1,4 +1,4 @@
-from WrapperFunctions import _read_csv
+from column_store_table import _read_csv
 
 # Used for benchmarking.
 def print_memory_usage(column_store_table):

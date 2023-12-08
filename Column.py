@@ -6,10 +6,9 @@ import os
 import sys
 
 class Compression(Enum):
-    NONE = 0
-    RLE = 1
-    BITMAP = 2
-    DELTA = 3
+  NONE = 0
+  RLE = 1
+  BITMAP = 2
 
 class Column:
   def __init__(self, name, values):
@@ -36,13 +35,10 @@ class Column:
 
   def compress(self, compression):
     self.compression = compression
-    match self.compression:
-      case Compression.RLE:
-        self.compress_RLE()
-      case Compression.BITMAP:
-        self.compress_BITMAP()
-      case Compression.DELTA:
-        self.compress_DELTA()
+    if compression == Compression.RLE:
+      self.compress_RLE()
+    elif compression == Compression.BITMAP:
+      self.compress_BITMAP()
     # Else, Compression.NONE, do nothing.
     return self
 
@@ -69,20 +65,14 @@ class Column:
 
     return self
 
-  def compress_DELTA(self):
-    return self
-
   def compress_BITMAP(self):
     return self
 
   def decompress(self):
-    match self.compression:
-      case Compression.RLE:
-        self.decompress_RLE()
-      case Compression.BITMAP:
-        self.decompress_BITMAP()
-      case Compression.DELTA:
-        self.decompress_DELTA()
+    if self.compression == Compression.RLE:
+      self.decompress_RLE()
+    elif self.compression == Compression.BITMAP:
+      self.decompress_BITMAP()
     # Else, Compression.NONE, do nothing.
     return self
 
@@ -110,13 +100,8 @@ class Column:
 
     return self
 
-  def decompress_DELTA(self):
-    return self
-
   def decompress_BITMAP(self):
     return self
 
   def add_values(self, new_val):
     self.values.append(new_val)
-
-  # add other compression methods like bitmap and delta

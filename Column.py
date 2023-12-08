@@ -33,6 +33,12 @@ class Column:
       memory_usage += chunk.memory_usage() # TODO: Should index be T or F?
     return memory_usage
 
+  def print_col_stats(self):
+    print(f"{self.name}")
+    print(f"  Compressed: {self.compression}")
+    print(f"  Data type: {0}")
+    print(f"  Memory usage: {self.get_memory_usage()} B")
+
   def compress(self, compression):
     self.compression = compression
     if compression == Compression.RLE:

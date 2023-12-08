@@ -3,11 +3,11 @@ from column_store_table import _read_csv, Compression
 # Used for benchmarking.
 def print_memory_usage(column_store_table):
   table_stats = column_store_table.get_table_stats()
-  print("ColumnStoreTable stats")
+  print("++++++++++++++++++++++++++\n+ ColumnStoreTable stats +\n++++++++++++++++++++++++++")
 
   print(f"  MEMORY USAGE: {table_stats['memory_usage']} B")
   print(f"  TOTAL columns: {table_stats['num_columns']}")
-  print(f"  COMPRESSED columns: {table_stats['num_compressed_columns']}")
+  print(f"  COMPRESSED columns: {table_stats['num_compressed_columns']}\n")
 
 def benchmark_nyc_taxi_data():
   print("INITIALIZATION\n")

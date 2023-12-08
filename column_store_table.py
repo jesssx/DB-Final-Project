@@ -46,8 +46,11 @@ class ColumnStoreTable:
     print(columns['NAME'].get_values)
     self.columns = columns
   
-  def get_column_names(self):
-    return self.columns.keys()
+  def print_column_stats(self):
+    print("++++++++++++++++\n+ Column Stats +\n++++++++++++++++")
+    for col in self.columns.values():
+      col.print_col_stats()
+    print()
 
   def get_table_stats(self):
     """

@@ -199,7 +199,9 @@ class ColumnStoreTable:
         col.decompress()
         vals = list(col.get_values())
         col.compress(compression)
-        indices = sorted(range(len(vals)), key=lambda k: vals[k])
+        indices = sorted(
+            range(len(vals)), key=lambda k: vals[k], reverse=(not ascending)
+        )
 
         for _, col in self.columns.items():
             col.sort_column(indices)

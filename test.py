@@ -64,14 +64,36 @@ def test_sort():
     id_table.add_column(col1.name, col1)
     id_table.add_column(col2.name, col2)
 
+    print("BEFORE SORTING")
     columns = id_table.get_columns()
-    for _, col in columns.items():
-        print(col.get_values())
+    expected = {"ids": [3, 2, 1, 4, 5], "names": ["C", "B", "A", "D", "E"]}
 
+    for name, col in columns.items():
+        result = list(col.get_values())
+        for i in range(len(expected[name])):
+            assert expected[name][i] == result[i]
+
+    print("SORTED BY ID (ASCENDING)")
     id_table.sort("ids")
     columns = id_table.get_columns()
-    for _, col in columns.items():
-        print(col.get_values())
+
+    expected = {"ids": [1, 2, 3, 4, 5], "names": ["A", "B", "C", "D", "E"]}
+    for name, col in columns.items():
+        result = list(col.get_values())
+        for i in range(len(expected[name])):
+            assert expected[name][i] == result[i]
+
+    print("SORTED BY ID (DESCENDING)")
+    id_table.sort("ids", False)
+    columns = id_table.get_columns()
+
+    expected = {"ids": [5, 4, 3, 2, 1], "names": ["E", "D", "C", "B", "A"]}
+    for name, col in columns.items():
+        result = list(col.get_values())
+        for i in range(len(expected[name])):
+            assert expected[name][i] == result[i]
+
+    print("ALL SORTED CORRECTLY")
 
 
 def main():

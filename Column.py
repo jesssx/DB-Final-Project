@@ -75,7 +75,6 @@ class Column:
   def compress_BITMAP(self):
     return self
 
-  # TODO: Sanity check and test equality.
   def decompress(self):
     match self.compression:
       case Compression.RLE:
@@ -87,29 +86,29 @@ class Column:
     # Else, Compression.NONE, do nothing.
     return self
 
-    def decompress_RLE(self):
-      """
-      Decompresses the column back to its original format.
-      """
-      if self.compression != Compression.RLE:
-        raise ValueError("Column is not compressed with RLE.")
+  def decompress_RLE(self):
+    """
+    Decompresses the column back to its original format.
+    """
+    if self.compression != Compression.RLE:
+      raise ValueError("Column is not compressed with RLE.")
 
-      # Perform run-length decoding
-      for i, compressed_chunk in enumerate(self.values):
-        original_values = []
-        for value, run_length in zip(compressed_chunk['value'], compressed_chunk['run_length']):
-            original_values.extend([value] * run_length)
+    # Perform run-length decoding
+    for i, compressed_chunk in enumerate(self.values):
+      original_values = []
+      for value, run_length in zip(compressed_chunk['value'], compressed_chunk['run_length']):
+          original_values.extend([value] * run_length)
 
-        # Create a new Series with the original values
-        original_chunk = pd.Series(original_values)
+      # Create a new Series with the original values
+      original_chunk = pd.Series(original_values)
 
-        # Mutate self.values.
-        self.values[i] = original_chunk
+      # Mutate self.values.
+      self.values[i] = original_chunk
 
-      # Reset compression type
-      self.compression = Compression.NONE
+    # Reset compression type
+    self.compression = Compression.NONE
 
-      return self
+    return self
 
   def decompress_DELTA(self):
     return self

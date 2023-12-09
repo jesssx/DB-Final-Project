@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import sys
 
-from Column import Column, Compression
+from column import Column, Compression
 
 MAX_SIZE = 10**10  # bytes = 100 GB
 
@@ -114,7 +114,7 @@ class ColumnStoreTable:
         # call self.decompress()
         # returns a pandas dataframe generator
         self.decompress()
-    #   print(self.columns)
+        #   print(self.columns)
         col_data = {}
         for col_name in self.columns:
             series_list = self.columns[col_name].get_values()
@@ -126,9 +126,9 @@ class ColumnStoreTable:
                     all_series = series
                 else:
                     all_series.append(series, ignore_index=True)
-        # print(type(all_series))
+            # print(type(all_series))
             col_data[col_name] = all_series
-      # can return as df.itertuples() or iterrows() or __iter__()
+        # can return as df.itertuples() or iterrows() or __iter__()
         try:
             return pd.DataFrame(data=col_data)
         except ValueError:
@@ -144,8 +144,8 @@ class ColumnStoreTable:
     def filter(self, column_name, condition):
         # condition is probably a lambda function
         # filter column_name based on condition
-      # condition is probably a lambda function
-      # filter column_name based on condition
+        # condition is probably a lambda function
+        # filter column_name based on condition
         filtered_columns = {}
         num_series = 0
         for col_name in self.columns:
@@ -159,8 +159,8 @@ class ColumnStoreTable:
         for i in range(len(col_series)):
             # loop through all the values in each series
             for j, value in col_series[i].items():
-            # if the value fulfills condition
-            # print(j, value)
+                # if the value fulfills condition
+                # print(j, value)
                 if condition(value):
                     # print("true")
                     # add this value to filtered_columns
@@ -172,10 +172,12 @@ class ColumnStoreTable:
             for i, j in filtered_indices:
                 filtered_value = self.columns[col_name].get_values()[i][j]
                 new_col[i].append(filtered_value)
-            
+
             for k in range(len(new_col)):
                 if k == 0:
-                    filtered_columns[col_name] = Column(col_name, [pd.Series(new_col[k])])
+                    filtered_columns[col_name] = Column(
+                        col_name, [pd.Series(new_col[k])]
+                    )
                 else:
                     filtered_columns[col_name].add_values(pd.Series(new_col[k]))
 

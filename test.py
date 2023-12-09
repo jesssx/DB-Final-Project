@@ -96,10 +96,34 @@ def test_sort():
     print("ALL SORTED CORRECTLY")
 
 
+def test_bitmap_single_column():
+    data = ["M", "F", "F", "M", "M"]
+    col_series = pd.Series(data, name="Column1")
+    col = Column("Gender", col_series)
+
+    # initialization
+    print("INITIALIZATION\n")
+    print("col get_memory_usage:\n", col.get_memory_usage())  # 172 B
+    print(col.get_values())
+
+    # compression
+    print("\n\nCOMPRESSION\n")
+    col.compress_BITMAP()
+    print(col.get_values())
+    print("col get_memory_usage:\n", col.get_memory_usage())  # 32 B
+
+    # decompression
+    print("\n\nDECOMPRESSION\n")
+    col.decompress_BITMAP()
+    print(col.get_values())
+    print("col get_memory_usage:\n", col.get_memory_usage())
+
+
 def main():
-    test_RLE_single_column()
-    test_merge()
-    test_sort()
+    # test_RLE_single_column()
+    # test_merge()
+    # test_sort()
+    test_bitmap_single_column()
 
 
 if __name__ == "__main__":

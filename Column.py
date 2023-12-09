@@ -30,10 +30,13 @@ class Column:
         return self.compression
 
     def get_memory_usage(self):
-        memory_usage = sys.getsizeof(self.values)
-        for chunk in self.values:
-            memory_usage += chunk.memory_usage()  # TODO: Should index be T or F?
-        return memory_usage
+        if type(self.values) == pd.Series:
+            return self.values.memory_usage()
+        else:
+            memory_usage = sys.getsizeof(self.values)
+            for chunk in self.values:
+                memory_usage += chunk.memory_usage()  # TODO: Should index be T or F?
+            return memory_usage
 
     def print_col_stats(self):
         print(f"{self.name}")
@@ -58,7 +61,7 @@ class Column:
           pd.Series objects in self.values have run_length and value fields.
         """
         self.compression = Compression.RLE
-        # Perform run-length encoding
+        # Perform RLE encoding
         for i, chunk in enumerate(self.values):
             values = chunk.ne(chunk.shift()).cumsum()
             run_lengths = chunk.groupby(values).size()
@@ -77,6 +80,20 @@ class Column:
         return self
 
     def compress_BITMAP(self):
+        self.compression = Compression.BITMAP
+
+        # Perform bitmap encoding
+        bitmap = {}
+        self.num_values = len(self.values)
+
+        for i, val in enumerate(self.values):
+            if val not in bitmap:
+                bitmap[val] = [0] * i
+            bitmap[val].append(1)
+            for key in bitmap:
+                if key != val:
+                    bitmap[key].append(0)
+        self.values = pd.Series(bitmap)
         return self
 
     def decompress(self):
@@ -89,7 +106,7 @@ class Column:
 
     def decompress_RLE(self):
         """
-        Decompresses the column back to its original format.
+        Decompresses the column from RLE compression back to its original format.
         """
         if self.compression != Compression.RLE:
             raise ValueError("Column is not compressed with RLE.")
@@ -114,6 +131,27 @@ class Column:
         return self
 
     def decompress_BITMAP(self):
+        """
+        Decompresses the column from bitmap compression back to its original format.
+        """
+        if self.compression != Compression.BITMAP:
+            raise ValueError("Column is not compressed with BITMAP.")
+
+        # Perform bitmap decoding
+        indices = self.values.index
+        values = [0] * self.num_values
+        for i in self.values.index:
+            positions = self.values[i]
+            for j, val in enumerate(positions):
+                if val == 1:
+                    values[j] = i
+
+        # Create a new Series with the original values
+        self.values = pd.Series(values)
+
+        # Reset compression type
+        self.compression = Compression.NONE
+
         return self
 
     def add_values(self, new_val):

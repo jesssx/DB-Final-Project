@@ -1,5 +1,5 @@
 import pandas as pd
-from column import Column
+from Column import Column
 from column_store_table import ColumnStoreTable, _read_csv
 
 

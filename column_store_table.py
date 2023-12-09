@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import sys
 
-from column import Column, Compression
+from Column import Column, Compression
 
 MAX_SIZE = 10**10  # bytes = 100 GB
 
@@ -52,11 +52,9 @@ class ColumnStoreTable:
         for chunk in df:
             for col in chunk.columns:
                 if col not in columns:
-                    # print(chunk.loc[:, col])
-                    columns[col] = Column(col, pd.Series([chunk.loc[:, col]]))
+                    columns[col] = Column(col, [pd.Series(chunk.loc[:, col])])
                 else:
                     columns[col].add_values(pd.Series([chunk.loc[:, col]]))
-        print(columns["NAME"].get_values)
         self.columns = columns
 
     def get_columns(self):
@@ -107,8 +105,8 @@ class ColumnStoreTable:
         """
         Decompresses all columns.
         """
-        for _, col in self.columns:
-            col.decompress()
+        for col_name in self.columns:
+            self.columns[col_name].decompress()
         return self
 
     def to_row_format(self):
@@ -116,15 +114,72 @@ class ColumnStoreTable:
         # call self.decompress()
         # returns a pandas dataframe generator
         self.decompress()
+    #   print(self.columns)
+        col_data = {}
+        for col_name in self.columns:
+            series_list = self.columns[col_name].get_values()
+            # print(series_list, len(series_list), type(series_list))
+            all_series = None
+            for series in series_list:
+                #   print(type(series))
+                if all_series is None:
+                    all_series = series
+                else:
+                    all_series.append(series, ignore_index=True)
+        # print(type(all_series))
+            col_data[col_name] = all_series
+      # can return as df.itertuples() or iterrows() or __iter__()
+        try:
+            return pd.DataFrame(data=col_data)
+        except ValueError:
+            return pd.DataFrame(data=col_data, index=[0])
 
-    def to_csv(self):
+    def to_csv(self, name):
         # save a csv of the current table
         # does not return anything
-        print("done")
+        df = self.to_row_format()
+        df.to_csv(name)
+        print("Saved to csv")
 
     def filter(self, column_name, condition):
         # condition is probably a lambda function
         # filter column_name based on condition
+      # condition is probably a lambda function
+      # filter column_name based on condition
+        filtered_columns = {}
+        num_series = 0
+        for col_name in self.columns:
+            num_series = len(self.columns[col_name].get_values())
+            filtered_columns[col_name] = Column(col_name, [None] * num_series)
+        col_series = self.columns[column_name].get_values()
+        # print(col_series, len(col_series))
+
+        filtered_indices = []
+        # loop through all the series for column names
+        for i in range(len(col_series)):
+            # loop through all the values in each series
+            for j, value in col_series[i].items():
+            # if the value fulfills condition
+            # print(j, value)
+                if condition(value):
+                    # print("true")
+                    # add this value to filtered_columns
+                    # along with its corresponding values in every other column
+                    filtered_indices.append((i, j))
+
+        for col_name in self.columns:
+            new_col = [[] * num_series]
+            for i, j in filtered_indices:
+                filtered_value = self.columns[col_name].get_values()[i][j]
+                new_col[i].append(filtered_value)
+            
+            for k in range(len(new_col)):
+                if k == 0:
+                    filtered_columns[col_name] = Column(col_name, [pd.Series(new_col[k])])
+                else:
+                    filtered_columns[col_name].add_values(pd.Series(new_col[k]))
+
+        self.columns = filtered_columns
         return self
 
     def merge(self, other, on_column_name):

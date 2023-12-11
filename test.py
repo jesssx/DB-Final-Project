@@ -10,7 +10,7 @@ def test_RLE_single_column():
     # data = [0, 0, 1, 1, 1, 1, 1, 0]
     data = ["M", "F", "F", "M", "M"]
     col_series = pd.Series(data, name="Column1")
-    col = Column("A", [col_series])
+    col = Column("A", col_series)
 
     # initialization
     print("INITIALIZATION\n")
@@ -21,8 +21,8 @@ def test_RLE_single_column():
     # compression
     print("\n\nCOMPRESSION\n")
     col.compress_RLE()
-    print(col.get_values()[0].value)
-    print(col.get_values()[0].run_length)
+    print(col.get_values().value)
+    print(col.get_values().run_length)
     print("col get_memory_usage:\n", col.get_memory_usage())  # 204 B
 
     # decompression
@@ -127,7 +127,7 @@ def test_read_csv_compressions_people():
 
 
 def main():
-    # test_RLE_single_column()
+    test_RLE_single_column()
     # test_merge()
     # test_sort()
     # test_bitmap_single_column()

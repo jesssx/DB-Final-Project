@@ -57,7 +57,7 @@ def benchmark_nyc_taxi_data_column_store(file="results/nyc_column.txt"):
 
 
     # Bitmap compress first 2 columns.
-    output_file.write("\nCompression: station, name col compress RLE\n")
+    output_file.write("\nCompression: station, name col compress BITMAP\n")
     start_time = time.time()
     column_store_table.compress({
         "STATION": Compression.BITMAP,  # Only has 1 value.

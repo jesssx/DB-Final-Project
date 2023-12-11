@@ -61,21 +61,18 @@ class Column:
           pd.Series objects in self.values have run_length and value fields.
         """
         self.compression = Compression.RLE
+
         # Perform RLE encoding
-        for i, chunk in enumerate(self.values):
-            values = chunk.ne(chunk.shift()).cumsum()
-            run_lengths = chunk.groupby(values).size()
+        values = self.values.ne(self.values.shift()).cumsum()
+        run_lengths = self.values.groupby(values).size()
 
-            # Create a new Series with run-length encoded values and run lengths
-            compressed_chunk = pd.Series(
-                {
-                    "value": chunk.groupby(values).first().values,
-                    "run_length": run_lengths.values,
-                },
-            )
-
-            # Mutate self.values.
-            self.values[i] = compressed_chunk
+        # Mutate self.values and create a new Series with run-length encoded values and run lengths
+        self.values = pd.Series(
+            {
+                "value": self.values.groupby(values).first().values,
+                "run_length": run_lengths.values,
+            },
+        )
 
         return self
 
@@ -110,20 +107,16 @@ class Column:
         """
         if self.compression != Compression.RLE:
             raise ValueError("Column is not compressed with RLE.")
-
+        
         # Perform run-length decoding
-        for i, compressed_chunk in enumerate(self.values):
-            original_values = []
-            for value, run_length in zip(
-                compressed_chunk["value"], compressed_chunk["run_length"]
-            ):
-                original_values.extend([value] * run_length)
+        original_values = []
+        for value, run_length in zip(
+            self.values["value"], self.values["run_length"]
+        ):
+            original_values.extend([value] * run_length)
 
-            # Create a new Series with the original values
-            original_chunk = pd.Series(original_values)
-
-            # Mutate self.values.
-            self.values[i] = original_chunk
+        # # Mutate self.values and create a new Series with the original values
+        self.values = pd.Series(original_values)
 
         # Reset compression type
         self.compression = Compression.NONE

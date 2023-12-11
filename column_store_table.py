@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import sys
 
-from Column import Column, Compression
+from column import Column, Compression
 
 MAX_SIZE = 10**10  # bytes = 100 GB
 

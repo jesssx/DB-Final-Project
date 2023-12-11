@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import sys
 
-from column import Column, Compression
+from Column import Column, Compression
 
 MAX_SIZE = 10**10  # bytes = 100 GB
 
@@ -91,7 +91,7 @@ class ColumnStoreTable:
         Returns:
           self
         """
-        for col_name, compression in desired_compressions:
+        for col_name, compression in desired_compressions.items():
             col = self.columns[col_name]
 
             # Check that column starts decompressed.

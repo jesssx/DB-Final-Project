@@ -136,11 +136,11 @@ class ColumnStoreTable:
         except ValueError:
             return pd.DataFrame(data=col_data, index=[0])
 
-    def to_csv(self, name):
+    def to_csv(self, name, compression=None):
         # save a csv of the current table
         # does not return anything
         df = self.to_row_format()
-        df.to_csv(name)
+        df.to_csv(name, compression=compression)
         print("Saved to csv")
 
     def filter(self, column_name, condition):

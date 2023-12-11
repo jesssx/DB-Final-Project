@@ -15,7 +15,7 @@ class Compression(Enum):
 class Column:
     def __init__(self, name, values):
         self.name = name
-        self.values = values  # list of pd.Series
+        self.values = values  # pd.Series
 
         # Column must be uncompressed when first initialized.
         self.compression = Compression.NONE
@@ -86,9 +86,9 @@ class Column:
         bitmap = {}
         self.num_values = len(self.values)
 
-        for i, val in enumerate(self.values):
+        for j, val in enumerate(self.values):
             if val not in bitmap:
-                bitmap[val] = [0] * i
+                bitmap[val] = [0] * j
             bitmap[val].append(1)
             for key in bitmap:
                 if key != val:

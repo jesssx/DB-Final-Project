@@ -1,3 +1,4 @@
+import os
 import time
 
 from column_store_table import _read_csv, Compression
@@ -20,7 +21,7 @@ def print_memory_usage(column_store_table, file):
     memory_usage_str += f"  COMPRESSED columns: {table_stats['num_compressed_columns']}\n\n"
     return memory_usage_str
 
-def benchmark_nyc_taxi_data_column_store(file="results/nyc_column.txt"):
+def benchmark_nyc_column_store(file="results/nyc_column.txt"):
   with open(file, "w") as output_file:
     output_file.write("Initialization: _read_csv\n")
 
@@ -88,20 +89,54 @@ def benchmark_nyc_taxi_data_column_store(file="results/nyc_column.txt"):
     execution_time = (end_time - start_time) * 1000
     output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
 
-    # TODO: Filter.
-    # TODO: Merge.
-    # TODO: To csv.
 
-def benchmark_nyc_taxi_data_optimal_column_store(file="results/nyc_column_optimal.txt"):
+    # Filter.
+    # TODO: Uncomment when ready.
+    # output_file.write("\nFilter: SNWD != '0.0'\n")
+    # start_time = time.time()
+    # column_store_table.filter("SNWD", lambda x: x != "0.0")
+    # end_time = time.time()
+
+    execution_time = (end_time - start_time) * 1000
+    output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
+
+
+    # Merge.
+    output_file.write("\nMerge: self merge on DATE\n")
+    other = _read_csv('datasets/files/central_park_weather.csv')
+    start_time = time.time()
+    column_store_table.merge(other, "DATE")
+
+    # TODO: Debug. 
+    # merged_table = column_store_table.merge(other, "DATE")
+    # print(merged_table.get_table_stats())
+    # output_file.write("merged_table:\n")
+    # output_file.write(print_memory_usage(merged_table, file))
+
+    end_time = time.time()
+
+    execution_time = (end_time - start_time) * 1000
+    output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
+
+
+    # To csv.
+    output_file.write("\nto_csv\n")
+    to_csv_file = "results/nyc_column.csv"
+    start_time = time.time()
+    column_store_table.to_csv(to_csv_file)
+    end_time = time.time()
+    output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
+    os.remove(to_csv_file) # Remove the saved file.
+
+def benchmark_nyc_column_store_optimal(file="results/nyc_column_optimal.txt"):
   with open(file, "w") as output_file:
-    # TODO: Optimal table compression.
     column_store_table = _read_csv('datasets/files/central_park_weather.csv')
 
     start_time = time.time()
     column_store_table.sort("SNOW")
     column_store_table.compress({
-        "STATION": Compression.RLE,  # Only has 1 value.
-        "NAME": Compression.RLE,  # Only has 1 value.
+        "STATION": Compression.BITMAP,  # Only has 1 value.
+        "NAME": Compression.BITMAP,  # Only has 1 value.
         "AWND": Compression.RLE,
     })
     end_time = time.time()
@@ -112,8 +147,8 @@ def benchmark_nyc_taxi_data_optimal_column_store(file="results/nyc_column_optima
     output_file.write(print_memory_usage(column_store_table, file))
 
 def main():
-  benchmark_nyc_taxi_data_column_store()
-  benchmark_nyc_taxi_data_optimal_column_store()
+  benchmark_nyc_column_store()
+  benchmark_nyc_column_store_optimal()
 
 if __name__ == "__main__":
   main()

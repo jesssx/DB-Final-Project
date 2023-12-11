@@ -51,6 +51,7 @@ def test_merge():
     hobby_table.add_column(col4.name, col4)
 
     merged_table = id_table.merge(hobby_table, "names")
+    print(merged_table.get_table_stats())
 
 
 def test_sort():
@@ -127,8 +128,8 @@ def test_read_csv_compressions_people():
 
 
 def main():
-    test_RLE_single_column()
-    # test_merge()
+    # test_RLE_single_column()
+    test_merge()
     # test_sort()
     # test_bitmap_single_column()
     # test_read_csv_compressions_people()

@@ -15,7 +15,10 @@ class Compression(Enum):
 class Column:
     def __init__(self, name, values):
         self.name = name
-        self.values = values  # pd.Series
+        if type(values) == pd.Series:
+            self.values = values  # pd.Series
+        else:
+            raise ValueError("Column.values must be pd.Series")
 
         # Column must be uncompressed when first initialized.
         self.compression = Compression.NONE
@@ -32,11 +35,20 @@ class Column:
     def get_memory_usage(self):
         if type(self.values) == pd.Series:
             return self.values.memory_usage()
-        else:
+        elif type(self.values) == list:
             memory_usage = sys.getsizeof(self.values)
             for chunk in self.values:
-                memory_usage += chunk.memory_usage()  # TODO: Should index be T or F?
+                if type(chunk) == pd.Series:
+                    memory_usage += (
+                        chunk.memory_usage()
+                    )  # TODO: Should index be T or F?
+                else:
+                    raise ValueError(
+                        "Column.values must be pd.Series or a list of pd.Series."
+                    )
             return memory_usage
+        else:
+            raise ValueError("Column.values must be pd.Series or a list of pd.Series.")
 
     def print_col_stats(self):
         print(f"{self.name}")
@@ -107,12 +119,10 @@ class Column:
         """
         if self.compression != Compression.RLE:
             raise ValueError("Column is not compressed with RLE.")
-        
+
         # Perform run-length decoding
         original_values = []
-        for value, run_length in zip(
-            self.values["value"], self.values["run_length"]
-        ):
+        for value, run_length in zip(self.values["value"], self.values["run_length"]):
             original_values.extend([value] * run_length)
 
         # # Mutate self.values and create a new Series with the original values

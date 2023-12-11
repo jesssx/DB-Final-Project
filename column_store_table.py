@@ -157,8 +157,8 @@ class ColumnStoreTable:
             # loop through all the values in each series
             # if the value fulfills condition
             if condition(col_series[i]):
-                    # print("true")
-                    # add this value to filtered_columns
+                # print("true")
+                # add this value to filtered_columns
                 filtered_indices.append(i)
 
         for col_name in self.columns:
@@ -220,7 +220,7 @@ class ColumnStoreTable:
             new_values = []
             for i, j in join_rows:
                 new_values.append(col.get_values()[i])
-            new_col = Column(col_name, new_values)
+            new_col = Column(col_name, pd.Series(new_values))
             new_columns[col_name] = new_col
 
         for col_name, col in other.columns.items():
@@ -228,7 +228,7 @@ class ColumnStoreTable:
             new_values = []
             for i, j in join_rows:
                 new_values.append(col.get_values()[j])
-            new_col = Column(col_name, new_values)
+            new_col = Column(col_name, pd.Series(new_values))
             new_columns[col_name] = new_col
 
         # print([new_columns[col].values for col in new_columns])

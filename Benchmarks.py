@@ -88,18 +88,19 @@ def benchmark_nyc_column_store(file="results/nyc_column.txt"):
 
     execution_time = (end_time - start_time) * 1000
     output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
+    output_file.write(print_memory_usage(column_store_table, file))
 
 
     # Filter.
-    # TODO: Uncomment when ready.
-    # output_file.write("\nFilter: SNWD != '0.0'\n")
-    # start_time = time.time()
-    # column_store_table.filter("SNWD", lambda x: x != "0.0")
-    # end_time = time.time()
+    output_file.write("\nFilter: SNWD != '0.0'\n")
+    start_time = time.time()
+    column_store_table.filter("SNWD", lambda x: x != "0.0")
+    end_time = time.time()
 
     execution_time = (end_time - start_time) * 1000
     output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
-
+    output_file.write(print_memory_usage(column_store_table, file))
+    
 
     # Merge.
     output_file.write("\nMerge: self merge on DATE\n")

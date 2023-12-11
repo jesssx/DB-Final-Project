@@ -1,5 +1,5 @@
 import pandas as pd
-from column import Column
+from column import Column, Compression
 from column_store_table import ColumnStoreTable, _read_csv
 
 
@@ -119,11 +119,19 @@ def test_bitmap_single_column():
     print("col get_memory_usage:\n", col.get_memory_usage())
 
 
+def test_read_csv_compressions_people():
+    people = _read_csv("datasets/files/people/people-2000000.csv")
+    people.print_column_stats()
+    print(people.get_table_stats())
+    people.compress({"Company": Compression.BITMAP})
+
+
 def main():
-    test_RLE_single_column()
+    # test_RLE_single_column()
     # test_merge()
     # test_sort()
     # test_bitmap_single_column()
+    # test_read_csv_compressions_people()
 
     # print("***********")
     # column_store_table = _read_csv(
@@ -139,6 +147,7 @@ def main():
     # filter_exp = lambda x: x == "2009-01-01"
     # column_store_table.filter("DATE", filter_exp)
     # column_store_table.to_csv("out3.csv")
+    pass
 
 
 if __name__ == "__main__":

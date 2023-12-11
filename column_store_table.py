@@ -52,7 +52,7 @@ class ColumnStoreTable:
         for chunk in df:
             for col in chunk.columns:
                 if col not in columns:
-                    columns[col] = Column(col, [pd.Series(chunk.loc[:, col])])
+                    columns[col] = Column(col, pd.Series(chunk.loc[:, col]))
                 else:
                     columns[col].add_values(pd.Series([chunk.loc[:, col]]))
         self.columns = columns
@@ -91,7 +91,7 @@ class ColumnStoreTable:
         Returns:
           self
         """
-        for col_name, compression in desired_compressions:
+        for col_name, compression in desired_compressions.items():
             col = self.columns[col_name]
 
             # Check that column starts decompressed.
@@ -117,17 +117,19 @@ class ColumnStoreTable:
         #   print(self.columns)
         col_data = {}
         for col_name in self.columns:
-            series_list = self.columns[col_name].get_values()
-            # print(series_list, len(series_list), type(series_list))
-            all_series = None
-            for series in series_list:
-                #   print(type(series))
-                if all_series is None:
-                    all_series = series
-                else:
-                    all_series.append(series, ignore_index=True)
-            # print(type(all_series))
-            col_data[col_name] = all_series
+            col_values = self.columns[col_name].get_values()
+            # series_list = self.columns[col_name].get_values()
+            # # print(series_list, len(series_list), type(series_list))
+            # all_series = None
+            # for series in series_list:
+            #     #   print(type(series))
+            #     if all_series is None:
+            #         all_series = series
+            #     else:
+            #         all_series.append(series, ignore_index=True)
+            # # print(type(all_series))
+            # col_data[col_name] = all_series
+            col_data[col_name] = col_values
         # can return as df.itertuples() or iterrows() or __iter__()
         try:
             return pd.DataFrame(data=col_data)

@@ -101,9 +101,11 @@ def benchmark_nyc_column_store(file="results/nyc_column.txt"):
         column_store_table.filter("SNWD", lambda x: x != 0)
         end_time = time.time()
 
-        execution_time = (end_time - start_time) * 1000
-        output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
-        output_file.write(print_memory_usage(column_store_table, file))
+        # Sort by SNWD.
+        output_file.write("\nSort by SNWD\n")
+        start_time = time.time()
+        column_store_table.sort("SNWD", ascending=False)
+        end_time = time.time()
 
         # Merge.
         output_file.write("\nMerge: self merge on DATE\n")
@@ -143,21 +145,21 @@ def benchmark_nyc_column_store_optimal(file="results/nyc_column_optimal.txt"):
     with open(file, "w") as output_file:
         column_store_table = _read_csv("datasets/files/central_park_weather.csv")
 
-        start_time = time.time()
-        column_store_table.sort("SNOW")
-        column_store_table.compress(
-            {
-                "STATION": Compression.BITMAP,  # Only has 1 value.
-                "NAME": Compression.BITMAP,  # Only has 1 value.
-                "AWND": Compression.RLE,
-            }
-        )
-        end_time = time.time()
+    start_time = time.time()
+    column_store_table.sort("SNWD")
+    column_store_table.compress(
+        {
+            "STATION": Compression.BITMAP,  # Only has 1 value.
+            "NAME": Compression.BITMAP,  # Only has 1 value.
+            "SNWD": Compression.RLE,
+        }
+    )
+    end_time = time.time()
 
-        execution_time = (end_time - start_time) * 1000
-        output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
+    execution_time = (end_time - start_time) * 1000
+    output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
 
-        output_file.write(print_memory_usage(column_store_table, file))
+    output_file.write(print_memory_usage(column_store_table, file))
 
 
 def benchmark_people_column_store(file="results/people_column.txt"):
@@ -240,11 +242,13 @@ def benchmark_people_column_store(file="results/people_column.txt"):
 
 
 def main():
-    # for i in range(5):
-    #   benchmark_nyc_column_store(f"results/nyc_column/nyc_column_{i}.txt")
-    #   benchmark_nyc_column_store_optimal(f"results/nyc_column/nyc_column_optimal_{i}.txt")
     for i in range(5):
-        benchmark_people_column_store()
+        benchmark_nyc_column_store(f"results/nyc_column/nyc_column_{i}.txt")
+        benchmark_nyc_column_store_optimal(
+            f"results/nyc_column/nyc_column_optimal_{i}.txt"
+        )
+    # for i in range(5):
+    #   benchmark_customer_column_store()
 
 
 if __name__ == "__main__":

@@ -19,10 +19,10 @@ def benchmark_nyc_pandas(file="results/nyc_pandas.txt"):
     output_file.write(print_memory_usage(df))
 
 
-    # Sort by AWND.
-    output_file.write("\nSort by AWND\n") 
+    # Sort by SNWD.
+    output_file.write("\nSort by SNWD\n") 
     start_time = time.time()
-    df.sort_values("AWND")
+    df.sort_values("SNWD")
     end_time = time.time()
 
     execution_time = (end_time - start_time) * 1000

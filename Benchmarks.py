@@ -80,10 +80,10 @@ def benchmark_nyc_column_store(file="results/nyc_column.txt"):
     output_file.write(print_memory_usage(column_store_table, file))
 
 
-    # Sort by AWND.
-    output_file.write("\nSort by AWND\n") 
+    # Sort by SNWD.
+    output_file.write("\nSort by SNWD\n") 
     start_time = time.time()
-    column_store_table.sort("AWND", ascending=False)
+    column_store_table.sort("SNWD", ascending=False)
     end_time = time.time()
 
     execution_time = (end_time - start_time) * 1000
@@ -141,11 +141,11 @@ def benchmark_nyc_column_store_optimal(file="results/nyc_column_optimal.txt"):
     column_store_table = _read_csv('datasets/files/central_park_weather.csv')
 
     start_time = time.time()
-    column_store_table.sort("SNOW")
+    column_store_table.sort("SNWD")
     column_store_table.compress({
         "STATION": Compression.BITMAP,  # Only has 1 value.
         "NAME": Compression.BITMAP,  # Only has 1 value.
-        "AWND": Compression.RLE,
+        "SNWD": Compression.RLE,
     })
     end_time = time.time()
 
@@ -224,11 +224,11 @@ def benchmark_customer_column_store(file="results/customer_column.txt"):
     output_file.write(print_memory_usage(merged_table, file))
 
 def main():
-  # for i in range(5):
-  #   benchmark_nyc_column_store(f"results/nyc_column/nyc_column_{i}.txt")
-  #   benchmark_nyc_column_store_optimal(f"results/nyc_column/nyc_column_optimal_{i}.txt")
   for i in range(5):
-    benchmark_customer_column_store()
+    benchmark_nyc_column_store(f"results/nyc_column/nyc_column_{i}.txt")
+    benchmark_nyc_column_store_optimal(f"results/nyc_column/nyc_column_optimal_{i}.txt")
+  # for i in range(5):
+  #   benchmark_customer_column_store()
 
 if __name__ == "__main__":
   main()

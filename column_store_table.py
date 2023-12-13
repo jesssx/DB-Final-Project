@@ -16,9 +16,16 @@ def _read_csv(file_path):
 
 
 class ColumnStoreTable:
-    def __init__(self, file_path=None, input_columns=None):
+    table_id = 0
+
+    def __init__(self, file_path=None, input_columns=None, name=None):
         # columns = dictionary of column name to Column
         columns = {}
+        if name is not None:
+            self.name = name
+        else:
+            self.name = "table" + str(ColumnStoreTable.table_id)
+        ColumnStoreTable.table_id += 1
 
         if input_columns:
             self.columns = input_columns
@@ -229,7 +236,12 @@ class ColumnStoreTable:
             for i, j in join_rows:
                 new_values.append(col.get_values()[j])
             new_col = Column(col_name, pd.Series(new_values))
-            new_columns[col_name] = new_col
+            if col_name not in new_columns:
+                new_columns[col_name] = new_col
+            else:
+                if col_name != on_column_name:
+                    new_name = other.name + "." + col_name
+                    new_columns[col_name] = new_col
 
         # print([new_columns[col].values for col in new_columns])
 

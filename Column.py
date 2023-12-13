@@ -158,7 +158,7 @@ class Column:
         return self
 
     def add_values(self, new_val):
-        self.values.append(new_val)
+        self.values.extend(new_val)
 
     def sort_column(self, indices):
         compression = self.compression

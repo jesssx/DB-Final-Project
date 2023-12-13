@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import sys
 
-from Column import Column, Compression
+from column import Column, Compression
 
 MAX_SIZE = 10**10  # bytes = 100 GB
 
@@ -35,6 +35,7 @@ class ColumnStoreTable:
             self.columns = columns
             return
 
+        print("Before reading file")
         if file_path.startswith("http://") or file_path.startswith("https://"):
             response = requests.get(file_path)
             content = response.text
@@ -43,19 +44,23 @@ class ColumnStoreTable:
                 content.encode("utf-8")
             )  # Calculate size from content length
         else:
+            # print(f"File Size is {os.stat(file_path).st_size / (1024 * 1024)} MB")
             with open(file_path, "r") as file:
                 content = file.readlines()
                 num_rows = len(content)
             file_size = os.path.getsize(file_path)
 
+        print("File size: ", str(file_size))
         # Calculate number of rows per chunk
         chunk_n_rows = None
         if file_size >= MAX_SIZE:
             row_size = file_size / num_rows
             chunk_n_rows = MAX_SIZE // row_size
 
+        print("Chunk size: ", str(chunk_n_rows))
         # Return Dataframe generator
         df = pd.read_csv(file_path, iterator=True, chunksize=chunk_n_rows)
+        print("Reading CSV...")
         for chunk in df:
             for col in chunk.columns:
                 if col not in columns:
@@ -169,6 +174,7 @@ class ColumnStoreTable:
                 filtered_indices.append(i)
 
         for col_name in self.columns:
+            self.columns[col_name].decompress()
             filtered_values = []
             for i in filtered_indices:
                 value = self.columns[col_name].get_values()[i]
@@ -178,23 +184,38 @@ class ColumnStoreTable:
         self.columns = filtered_columns
         return self
 
-    def merge(self, other, on_column_name):
-        # merge self with other based on join predicate (on)
-        # error if column_name is not in both tables
-        # naive impl: uncompress column before merging
-        # currently only support inner join with equality predicate
+    def merge(self, other, on=None, self_on=None, other_on=None):
+        """
+        Merge self with other either on the column on or the two columns self_on and other_on.
+        """
+        if on is not None and self_on is None and other_on is None:
+            return self.merge_same(other, on)
+        elif self_on is not None and other_on is not None and on is None:
+            return self.merge_different(other, self_on, other_on)
+        else:
+            raise ValueError(
+                "Invalid merge arguments. Must either specify on or both self_on and other_on."
+            )
+
+    def merge_same(self, other, on_column_name):
+        """
+        Merge self with other based on join predicate (on_column_name equality).
+        Implements an inner join with an equality predicate.
+
+        Raises ValueError if on_column_name is not in both tables.
+        """
 
         # check whether join predicate is valid (column exists in both tables)
         if on_column_name not in self.columns or on_column_name not in other.columns:
             raise ValueError("Join predicate is invalid.")
 
-        # uncompress on_column_name on both tables
+        # uncompress "on" column on both tables
         self_col = self.columns[on_column_name]
         self_col.decompress()
         other_col = other.columns[on_column_name]
         other_col.decompress()
 
-        # create dictionary based on on_column_name for both tables
+        # create dictionary based on "on" columns for both tables
         self_dict = {}
         other_dict = {}
         for i, val in enumerate(self_col.get_values()):
@@ -206,8 +227,71 @@ class ColumnStoreTable:
                 other_dict[val] = []
             other_dict[val].append(i)
 
-        # print(self_dict)
-        # print(other_dict)
+        # figure out which rows to keep for each table (equalities)
+        join_rows = []
+        for key in self_dict:
+            if key in other_dict:
+                for i in self_dict[key]:
+                    for j in other_dict[key]:
+                        join_rows.append((i, j))
+
+        new_columns = {}
+
+        # for each column, uncompress and keep the specified rows (and in that specific order)
+        for col_name, col in self.columns.items():
+            col.decompress()
+            new_values = []
+            for i, j in join_rows:
+                new_values.append(col.get_values()[i])
+            new_col = Column(col_name, pd.Series(new_values))
+            new_columns[col_name] = new_col
+
+        for col_name, col in other.columns.items():
+            col.decompress()
+            new_values = []
+            for i, j in join_rows:
+                new_values.append(col.get_values()[j])
+            new_col = Column(col_name, pd.Series(new_values))
+            if col_name not in new_columns:
+                new_columns[col_name] = new_col
+            else:
+                if col_name != on_column_name:
+                    new_name = col_name + "_" + other.name
+                    new_columns[new_name] = new_col
+
+        # print([new_columns[col].values for col in new_columns])
+
+        # create a new ColumnStoreTable with the new columns
+        return ColumnStoreTable(None, new_columns)
+
+    def merge_different(self, other, self_on, other_on):
+        """
+        Merge self with other based on join predicate of their respective arguments self_on and other_on.
+        Implements an inner join with an equality predicate.
+
+        Raises ValueError if self_on is not a column in self or other_on is not a column in other.
+        """
+        # check whether join predicate is valid (column exists in both tables)
+        if self_on not in self.columns or other_on not in other.columns:
+            raise ValueError("Join predicate is invalid.")
+
+        # uncompress "on" column on both tables
+        self_col = self.columns[self_on]
+        self_col.decompress()
+        other_col = other.columns[other_on]
+        other_col.decompress()
+
+        # create dictionary based on "on" columns for both tables
+        self_dict = {}
+        other_dict = {}
+        for i, val in enumerate(self_col.get_values()):
+            if val not in self_dict:
+                self_dict[val] = []
+            self_dict[val].append(i)
+        for i, val in enumerate(other_col.get_values()):
+            if val not in other_dict:
+                other_dict[val] = []
+            other_dict[val].append(i)
 
         # figure out which rows to keep for each table (equalities)
         join_rows = []
@@ -239,9 +323,8 @@ class ColumnStoreTable:
             if col_name not in new_columns:
                 new_columns[col_name] = new_col
             else:
-                if col_name != on_column_name:
-                    new_name = other.name + "." + col_name
-                    new_columns[col_name] = new_col
+                new_name = other.name + "." + col_name
+                new_columns[new_name] = new_col
 
         # print([new_columns[col].values for col in new_columns])
 

@@ -1,10 +1,12 @@
-# DB-Final-Project
+# Column-Oriented Algorithms for Python Pandas
+
+<em>Brought to you by Julie Meng (jmeng), Jessica Xu (jjx) & Sarah Wang (sarahyw)</em>
 
 ## Datasets
 
 The NYC dataset on Central Park weather can be found [here](https://raw.githubusercontent.com/toddwschneider/nyc-taxi-data/master/data/central_park_weather.csv).
 
-The large customers, people datasets can be generated with the following [public script] (https://www.datablist.com/learn/csv/download-sample-csv-files?fbclid=IwAR3nUpT-So7k9LaS1ekVPpFlAMof-JD23zpjFChOd64OOY_cO82OY9kNnSk).
+The large customers, people datasets can be generated with the following [public script](https://www.datablist.com/learn/csv/download-sample-csv-files?fbclid=IwAR3nUpT-So7k9LaS1ekVPpFlAMof-JD23zpjFChOd64OOY_cO82OY9kNnSk).
 
 ## Benchmarking Scripts
 

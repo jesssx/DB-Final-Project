@@ -105,15 +105,11 @@ def benchmark_nyc_column_store(file="results/nyc_column.txt"):
     # Merge.
     output_file.write("\nMerge: self merge on DATE\n")
     start_time = time.time()
-    column_store_table.merge(column_store_table, "DATE")
-
-    # TODO: Debug. 
-    # merged_table = column_store_table.merge(column_store_table, "DATE")
-    # print(merged_table.get_table_stats())
-    # output_file.write("merged_table:\n")
-    # output_file.write(print_memory_usage(merged_table, file))
-
+    merged_table = column_store_table.merge(column_store_table, "DATE")
     end_time = time.time()
+    # TODO: Merged table size is incorrect.
+    output_file.write("merged_table:\n")
+    output_file.write(print_memory_usage(merged_table, file))
 
     execution_time = (end_time - start_time) * 1000
     output_file.write(f"  EXECUTION TIME: {execution_time} ms\n")
@@ -159,8 +155,9 @@ def benchmark_nyc_column_store_optimal(file="results/nyc_column_optimal.txt"):
     output_file.write(print_memory_usage(column_store_table, file))
 
 def main():
-  benchmark_nyc_column_store()
-  benchmark_nyc_column_store_optimal()
+  for i in range(5):
+    benchmark_nyc_column_store(f"results/nyc_column/nyc_column_{i}.txt")
+    benchmark_nyc_column_store_optimal(f"results/nyc_column/nyc_column_optimal_{i}.txt")
 
 if __name__ == "__main__":
   main()

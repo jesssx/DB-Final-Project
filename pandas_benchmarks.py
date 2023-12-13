@@ -74,7 +74,8 @@ def benchmark_nyc_pandas(file="results/nyc_pandas.txt"):
     output_file.write(print_memory_usage(df))
 
 def main():
-  benchmark_nyc_pandas()
+    for i in range(5):
+        benchmark_nyc_pandas(f"results/nyc_pandas/nyc_pandas_{i}.txt")
 
 if __name__ == "__main__":
   main()

@@ -14,24 +14,8 @@ def number():
     return random.randrange(-1000, 1000)
 
 
-def small_positive_integer():
-    return random.randrange(1, 100)
-
-
-def positive_integer():
-    return random.randrange(1, 1000)
-
-
 def number_employees():
     return random.randrange(1, 10000)
-
-
-def long_text():
-    return fake.paragraph(nb_sentences=1)
-
-
-def product_name():
-    return fake.text(max_nb_chars=30)
 
 
 def full_name():
@@ -295,22 +279,14 @@ TYPES_TO_GENERATORS = {
     "city": fake.city,
     "country": fake.country,
     "sex": sex,
-    "ean": fake.ean,
-    "url": fake.url,
     "email": fake.email,
     "business_email": fake.company_email,
-    "website": fake.url,
     "job": fake.job,
     "number": number,
-    "small_positive_integer": small_positive_integer,
-    "positive_integer": positive_integer,
-    "product_name": product_name,
     "date": fake.date,
     "year": fake.year,
     "datetime": fake.date_time,
-    "date_this_decade": fake.date_this_decade,
     "date_of_birth": fake.date_of_birth,
-    "long_text": long_text,
     "address": fake.address,
     "phone": fake.phone_number,
 }

@@ -34,21 +34,9 @@ class Column:
 
     def get_memory_usage(self):
         if type(self.values) == pd.Series:
-            return self.values.memory_usage()
-        elif type(self.values) == list:
-            memory_usage = sys.getsizeof(self.values)
-            for chunk in self.values:
-                if type(chunk) == pd.Series:
-                    memory_usage += (
-                        chunk.memory_usage()
-                    )  # TODO: Should index be T or F?
-                else:
-                    raise ValueError(
-                        "Column.values must be pd.Series or a list of pd.Series."
-                    )
-            return memory_usage
+            return self.values.memory_usage(deep=True)
         else:
-            raise ValueError("Column.values must be pd.Series or a list of pd.Series.")
+            raise ValueError("Column.values must be a pd.Series.")
 
     def print_col_stats(self):
         print(f"{self.name}")
@@ -67,8 +55,8 @@ class Column:
 
     def compress_RLE(self):
         """
-        Run length encodes the column and mutates self.values to hold new pd.Series
-        instances.
+        Run length encodes the column and mutates self.values to hold a new pd.Series
+        instance.
         Result:
           pd.Series objects in self.values have run_length and value fields.
         """
@@ -89,6 +77,12 @@ class Column:
         return self
 
     def compress_BITMAP(self):
+        """
+        Bitmap encodes the column and mutates self.values to hold a new pd.Series
+        instance.
+        Result:
+          pd.Series objects in self.values have run_length and value fields.
+        """
         self.compression = Compression.BITMAP
 
         # Perform bitmap encoding
@@ -141,7 +135,6 @@ class Column:
             raise ValueError("Column is not compressed with BITMAP.")
 
         # Perform bitmap decoding
-        indices = self.values.index
         values = [0] * self.num_values
         for i in self.values.index:
             positions = self.values[i]
@@ -158,9 +151,12 @@ class Column:
         return self
 
     def add_values(self, new_val):
-        self.values.extend(new_val)
+        self.values.append(new_val)
 
     def sort_column(self, indices):
+        """
+        Sort the column based on the provided order of indices.
+        """
         compression = self.compression
         self.decompress()
         new_vals = []

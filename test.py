@@ -167,30 +167,32 @@ def test_read_csv_compressions_people():
     people.compress({"Company": Compression.BITMAP})
 
 
+def test_filter_nyc_weather():
+    print("***********")
+    column_store_table = _read_csv(
+        "https://raw.githubusercontent.com/toddwschneider/nyc-taxi-data/master/data/central_park_weather.csv"
+    )
+    # print(column_store_table.to_row_format())
+    # column_store_table.to_csv("out.csv")
+
+    filt = lambda x: x == "USW00094728"
+    column_store_table.filter("STATION", filt)
+    column_store_table.to_csv("out2.csv")
+
+    filter_exp = lambda x: x == "2009-01-01"
+    column_store_table.filter("DATE", filter_exp)
+    column_store_table.to_csv("out3.csv")
+
+
 def main():
-    # test_RLE_single_column()
-    # test_merge_on_same_column()
+    test_RLE_single_column()
+    test_merge_on_same_column()
     test_merge_on_different_columns()
-    # test_self_merge()
-    # test_sort()
-    # test_bitmap_single_column()
-    # test_read_csv_compressions_people()
-
-    # print("***********")
-    # column_store_table = _read_csv(
-    #     "https://raw.githubusercontent.com/toddwschneider/nyc-taxi-data/master/data/central_park_weather.csv"
-    # )
-    # # print(column_store_table.to_row_format())
-    # # column_store_table.to_csv("out.csv")
-
-    # filt = lambda x: x == "USW00094728"
-    # column_store_table.filter("STATION", filt)
-    # column_store_table.to_csv("out2.csv")
-
-    # filter_exp = lambda x: x == "2009-01-01"
-    # column_store_table.filter("DATE", filter_exp)
-    # column_store_table.to_csv("out3.csv")
-    pass
+    test_self_merge()
+    test_sort()
+    test_bitmap_single_column()
+    test_read_csv_compressions_people()
+    test_filter_nyc_weather()
 
 
 if __name__ == "__main__":

@@ -68,8 +68,9 @@ if __name__ == "__main__":
     # generate_file("people", "people-10000", 10000)
     # generate_file("people", "people-100000", 100000)
     # generate_file('people', 'people-500000', 500000)
-    generate_file("people", "people-1000000", 1000000)
-    # generate_file("people", "people-2000000", 2000000)
-    # generate_file("people", "people-1150000000", 1150000000)
+    # generate_file("people", "people-1000000", 1000000)
+    # generate_file("people", "people-10000000", 10000000)
+    # generate_file("people", "people-100000000", 100000000)
 
     # generate_file("companies", "companies-20", 20)
+    pass

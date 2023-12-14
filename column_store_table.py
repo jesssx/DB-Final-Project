@@ -16,18 +16,20 @@ def _read_csv(file_path):
 
 
 class ColumnStoreTable:
-    table_id = 0
+    table_num = 0
 
     def __init__(self, file_path=None, input_columns=None, name=None):
         # columns = dictionary of column name to Column
         columns = {}
+
         if name is not None:
             self.name = name
         else:
-            self.name = "table" + str(ColumnStoreTable.table_id)
-        ColumnStoreTable.table_id += 1
+            self.name = "table" + str(ColumnStoreTable.table_num)
 
-        if input_columns:
+        ColumnStoreTable.table_num += 1
+
+        if input_columns:  # Construct table from provided columns
             self.columns = input_columns
             return
 
@@ -35,7 +37,8 @@ class ColumnStoreTable:
             self.columns = columns
             return
 
-        print("Before reading file")
+        chunk_n_rows = None
+        # Determine file size, and if size is too large, calculate chunk size
         if file_path.startswith("http://") or file_path.startswith("https://"):
             response = requests.get(file_path)
             content = response.text
@@ -43,24 +46,25 @@ class ColumnStoreTable:
             file_size = len(
                 content.encode("utf-8")
             )  # Calculate size from content length
+            if file_size >= MAX_SIZE:
+                row_size = file_size / num_rows
+                chunk_n_rows = MAX_SIZE // row_size
         else:
-            # print(f"File Size is {os.stat(file_path).st_size / (1024 * 1024)} MB")
-            with open(file_path, "r") as file:
-                content = file.readlines()
-                num_rows = len(content)
-            file_size = os.path.getsize(file_path)
+            file_size = os.stat(file_path).st_size
+
+            file = open(file_path, "r")
+            for line in file:
+                row_size = sys.getsizeof(line)
+                break
+            if file_size >= MAX_SIZE:
+                chunk_n_rows = MAX_SIZE // row_size
 
         print("File size: ", str(file_size))
-        # Calculate number of rows per chunk
-        chunk_n_rows = None
-        if file_size >= MAX_SIZE:
-            row_size = file_size / num_rows
-            chunk_n_rows = MAX_SIZE // row_size
-
         print("Chunk size: ", str(chunk_n_rows))
+
         # Return Dataframe generator
         df = pd.read_csv(file_path, iterator=True, chunksize=chunk_n_rows)
-        print("Reading CSV...")
+
         for chunk in df:
             for col in chunk.columns:
                 if col not in columns:
@@ -73,6 +77,9 @@ class ColumnStoreTable:
         return self.columns
 
     def print_column_stats(self):
+        """
+        Print out the statistics for each column in the table.
+        """
         print("++++++++++++++++\n+ Column Stats +\n++++++++++++++++")
         for col in self.columns.values():
             col.print_col_stats()
@@ -122,12 +129,14 @@ class ColumnStoreTable:
         return self
 
     def to_row_format(self):
-        # transform whole table to row format
-        # call self.decompress()
-        # returns a pandas dataframe generator
+        """
+        Transforms the table to row format.
+
+        Returns a pandas Dataframe.
+        """
         self.decompress()
-        #   print(self.columns)
         col_data = {}
+
         for col_name in self.columns:
             col_values = self.columns[col_name].get_values()
             # series_list = self.columns[col_name].get_values()
@@ -149,8 +158,9 @@ class ColumnStoreTable:
             return pd.DataFrame(data=col_data, index=[0])
 
     def to_csv(self, name, compression=None):
-        # save a csv of the current table
-        # does not return anything
+        """
+        Saves a csv of the current table to the file at name.
+        """
         df = self.to_row_format()
         df.to_csv(name, compression=compression)
         print("Saved to csv")
@@ -259,8 +269,6 @@ class ColumnStoreTable:
                     new_name = col_name + "_" + other.name
                     new_columns[new_name] = new_col
 
-        # print([new_columns[col].values for col in new_columns])
-
         # create a new ColumnStoreTable with the new columns
         return ColumnStoreTable(None, new_columns)
 
@@ -301,8 +309,6 @@ class ColumnStoreTable:
                     for j in other_dict[key]:
                         join_rows.append((i, j))
 
-        # print(join_rows)
-
         new_columns = {}
 
         # for each column, uncompress and keep the specified rows (and in that specific order)
@@ -326,13 +332,15 @@ class ColumnStoreTable:
                 new_name = other.name + "." + col_name
                 new_columns[new_name] = new_col
 
-        # print([new_columns[col].values for col in new_columns])
-
         # create a new ColumnStoreTable with the new columns
         return ColumnStoreTable(None, new_columns)
 
     def sort(self, column_name, ascending=True):
-        # sort column [stretch]
+        """
+        Sorts the table by the column column_name.
+
+        Sorts in ascending order if ascending is True, otherwise sorts in descending order.
+        """
         col = self.columns[column_name]
         compression = col.get_compression()
         col.decompress()
@@ -347,6 +355,8 @@ class ColumnStoreTable:
         return self
 
     def add_column(self, column_name, column):
-        # for testing purposes
+        """
+        Adds a column to the table.
+        """
         self.columns[column_name] = column
         return self

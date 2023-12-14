@@ -131,27 +131,18 @@ class ColumnStoreTable:
     def to_row_format(self):
         """
         Transforms the table to row format.
-
-        Returns a pandas Dataframe.
+        Returns:  
+            pd.Dataframe
         """
+        # decompress all columns
         self.decompress()
         col_data = {}
 
+        # get values for each column
         for col_name in self.columns:
             col_values = self.columns[col_name].get_values()
-            # series_list = self.columns[col_name].get_values()
-            # # print(series_list, len(series_list), type(series_list))
-            # all_series = None
-            # for series in series_list:
-            #     #   print(type(series))
-            #     if all_series is None:
-            #         all_series = series
-            #     else:
-            #         all_series.append(series, ignore_index=True)
-            # # print(type(all_series))
-            # col_data[col_name] = all_series
             col_data[col_name] = col_values
-        # can return as df.itertuples() or iterrows() or __iter__()
+        # create Dataframe
         try:
             return pd.DataFrame(data=col_data)
         except ValueError:
@@ -159,33 +150,40 @@ class ColumnStoreTable:
 
     def to_csv(self, name, compression=None):
         """
-        Saves a csv of the current table to the file at name.
+        Saves a csv of the current table to the file at name with compression type compression
+        Args:
+            name: name of file
+            compression: compression type (ie. zip)
         """
         df = self.to_row_format()
         df.to_csv(name, compression=compression)
         print("Saved to csv")
 
     def filter(self, column_name, condition):
-        # condition is probably a lambda function
-        # filter column_name based on condition
-        # condition is probably a lambda function
-        # filter column_name based on condition
-        ############# add support for math lambda conditions
+        """
+        Filter all columns based on applying condition to column_name
+        Args:
+            column_name: name of column to be filtered
+            condition: condition to apply on column
+        Returns:
+            self
+        """
+        # create new columns
         filtered_columns = {}
         col_series = self.columns[column_name].get_values()
         filtered_indices = []
-        # loop through all the series for column names
+
+        # loop through all values
         for i in range(len(col_series)):
-            # loop through all the values in each series
             # if the value fulfills condition
             if condition(col_series[i]):
-                # print("true")
-                # add this value to filtered_columns
+                # add this index
                 filtered_indices.append(i)
-
+        # loop through all columns
         for col_name in self.columns:
             self.columns[col_name].decompress()
             filtered_values = []
+            # add all indices
             for i in filtered_indices:
                 value = self.columns[col_name].get_values()[i]
                 filtered_values.append(value)
